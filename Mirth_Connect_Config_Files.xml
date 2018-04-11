@@ -728,21 +728,21 @@ return;</undeployScript>
                 </lastModified>
                 <contextSet>
                   <delegate>
-                    <contextType>GLOBAL_POSTPROCESSOR</contextType>
-                    <contextType>DESTINATION_DISPATCHER</contextType>
-                    <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
-                    <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
-                    <contextType>CHANNEL_PREPROCESSOR</contextType>
-                    <contextType>GLOBAL_UNDEPLOY</contextType>
-                    <contextType>CHANNEL_ATTACHMENT</contextType>
-                    <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
-                    <contextType>SOURCE_RECEIVER</contextType>
-                    <contextType>CHANNEL_BATCH</contextType>
                     <contextType>GLOBAL_PREPROCESSOR</contextType>
-                    <contextType>CHANNEL_DEPLOY</contextType>
-                    <contextType>CHANNEL_UNDEPLOY</contextType>
+                    <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
+                    <contextType>GLOBAL_POSTPROCESSOR</contextType>
                     <contextType>GLOBAL_DEPLOY</contextType>
+                    <contextType>GLOBAL_UNDEPLOY</contextType>
+                    <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+                    <contextType>CHANNEL_BATCH</contextType>
+                    <contextType>CHANNEL_DEPLOY</contextType>
+                    <contextType>DESTINATION_DISPATCHER</contextType>
+                    <contextType>CHANNEL_ATTACHMENT</contextType>
                     <contextType>CHANNEL_POSTPROCESSOR</contextType>
+                    <contextType>CHANNEL_UNDEPLOY</contextType>
+                    <contextType>SOURCE_RECEIVER</contextType>
+                    <contextType>CHANNEL_PREPROCESSOR</contextType>
+                    <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
                   </delegate>
                 </contextSet>
                 <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
@@ -802,7 +802,7 @@ function parseXmlParametersToObject (xml)
       <nextMetaDataId>24</nextMetaDataId>
       <name>Nucleus To FHIR</name>
       <description></description>
-      <revision>127</revision>
+      <revision>135</revision>
       <sourceConnector version="3.5.1">
         <metaDataId>0</metaDataId>
         <name>sourceConnector</name>
@@ -1398,8 +1398,8 @@ function errorCheck($data)
 {
 	if ($data.error !== null &amp;&amp; $data.error.slice(34,35) == &apos;&lt;&apos;)
 	{
-		tmp = $data;
-		return &apos;{}&apos;;
+		var error = {};
+		return error[&quot;errorHtml&quot;] = $data.error;
 	} else {
 		return $data;
 	}
@@ -1411,15 +1411,15 @@ function errorCheck($data)
             <inboundTemplate encoding="base64"></inboundTemplate>
             <outboundTemplate encoding="base64"></outboundTemplate>
             <inboundDataType>JSON</inboundDataType>
-            <outboundDataType>JSON</outboundDataType>
+            <outboundDataType>RAW</outboundDataType>
             <inboundProperties class="com.mirth.connect.plugins.datatypes.json.JSONDataTypeProperties" version="3.5.1">
               <batchProperties class="com.mirth.connect.plugins.datatypes.json.JSONBatchProperties" version="3.5.1">
                 <splitType>JavaScript</splitType>
                 <batchScript></batchScript>
               </batchProperties>
             </inboundProperties>
-            <outboundProperties class="com.mirth.connect.plugins.datatypes.json.JSONDataTypeProperties" version="3.5.1">
-              <batchProperties class="com.mirth.connect.plugins.datatypes.json.JSONBatchProperties" version="3.5.1">
+            <outboundProperties class="com.mirth.connect.plugins.datatypes.raw.RawDataTypeProperties" version="3.5.1">
+              <batchProperties class="com.mirth.connect.plugins.datatypes.raw.RawBatchProperties" version="3.5.1">
                 <splitType>JavaScript</splitType>
                 <batchScript></batchScript>
               </batchProperties>
@@ -1606,7 +1606,7 @@ return;</undeployScript>
         <metadata>
           <enabled>true</enabled>
           <lastModified>
-            <time>1523388024438</time>
+            <time>1523391931748</time>
             <timezone>America/Santiago</timezone>
           </lastModified>
           <pruningSettings>
@@ -1640,21 +1640,21 @@ return;</undeployScript>
                 </lastModified>
                 <contextSet>
                   <delegate>
-                    <contextType>GLOBAL_POSTPROCESSOR</contextType>
-                    <contextType>DESTINATION_DISPATCHER</contextType>
-                    <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
-                    <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
-                    <contextType>CHANNEL_PREPROCESSOR</contextType>
-                    <contextType>GLOBAL_UNDEPLOY</contextType>
-                    <contextType>CHANNEL_ATTACHMENT</contextType>
-                    <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
-                    <contextType>SOURCE_RECEIVER</contextType>
-                    <contextType>CHANNEL_BATCH</contextType>
                     <contextType>GLOBAL_PREPROCESSOR</contextType>
-                    <contextType>CHANNEL_DEPLOY</contextType>
-                    <contextType>CHANNEL_UNDEPLOY</contextType>
+                    <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
+                    <contextType>GLOBAL_POSTPROCESSOR</contextType>
                     <contextType>GLOBAL_DEPLOY</contextType>
+                    <contextType>GLOBAL_UNDEPLOY</contextType>
+                    <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+                    <contextType>CHANNEL_BATCH</contextType>
+                    <contextType>CHANNEL_DEPLOY</contextType>
+                    <contextType>DESTINATION_DISPATCHER</contextType>
+                    <contextType>CHANNEL_ATTACHMENT</contextType>
                     <contextType>CHANNEL_POSTPROCESSOR</contextType>
+                    <contextType>CHANNEL_UNDEPLOY</contextType>
+                    <contextType>SOURCE_RECEIVER</contextType>
+                    <contextType>CHANNEL_PREPROCESSOR</contextType>
+                    <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
                   </delegate>
                 </contextSet>
                 <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
