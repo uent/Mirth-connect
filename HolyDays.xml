@@ -10,10 +10,10 @@
   <channels>
     <channel version="3.5.1">
       <id>74fed4cb-0aa0-4289-9cbf-529bf8977107</id>
-      <nextMetaDataId>6</nextMetaDataId>
+      <nextMetaDataId>7</nextMetaDataId>
       <name>HolyDays Api Service</name>
       <description></description>
-      <revision>53</revision>
+      <revision>107</revision>
       <sourceConnector version="3.5.1">
         <metaDataId>0</metaDataId>
         <name>sourceConnector</name>
@@ -146,9 +146,13 @@
 
 parseEndPoint = parseEndPoint.split(&quot;/&quot;);
 
-channelMap.put(&apos;resourceName&apos;, validate(parseEndPoint[0], &apos;&apos;, new Array()));
+channelMap.put(&apos;uriFragment1&apos;, validate(parseEndPoint[0], &apos;&apos;, new Array()));
 
-channelMap.put(&apos;resourceIdentificator&apos;, validate(parseEndPoint[1], &apos;&apos;, new Array()));</script>
+channelMap.put(&apos;uriFragment2&apos;, validate(parseEndPoint[1], &apos;&apos;, new Array()));
+
+channelMap.put(&apos;uriFragment3&apos;, validate(parseEndPoint[2], &apos;&apos;, new Array()));
+
+channelMap.put(&apos;uriFragment4&apos;, validate(parseEndPoint[3], &apos;&apos;, new Array()));</script>
           </properties>
           <transformer version="3.5.1">
             <elements/>
@@ -219,24 +223,59 @@ channelMap.put(&apos;resourceIdentificator&apos;, validate(parseEndPoint[1], &ap
               <queueBufferSize>1000</queueBufferSize>
               <reattachAttachments>true</reattachAttachments>
             </destinationConnectorProperties>
-            <script>switch (String($(&apos;resourceName&apos;)))
+            <script>switch (String($(&apos;uriFragment1&apos;)))
 {
-	case &apos;Countries&apos;:
-		channelMap.put(&apos;resourceName&apos;, validate(&apos;Country&apos;, &apos;&apos;, new Array()));
-		switch (String($(&apos;Http Method&apos;)))
-        	{
-			case &apos;get&apos;:
-				switch (String($(&apos;resourceIdentificator&apos;)))
+	case &apos;countries&apos;://	api/countries
+		switch (String($(&apos;uriFragment2&apos;)))
+		{
+			case &apos;&apos;://	api/countries/
+				switch (String($(&apos;Http Method&apos;)))
 				{
-					case &apos;&apos;:
+					case &apos;get&apos;:// Get api/countries
+						channelMap.put(&apos;singularResourceName&apos;, validate(&apos;Country&apos;, &apos;&apos;, new Array()));
+						channelMap.put(&apos;pluralResourceName&apos;, validate(&apos;Countries&apos;, &apos;&apos;, new Array()));
 						channelMap.put(&apos;Soap Payload&apos;, validate(getXmlPayload(1), &apos;&apos;, new Array()));
 						break;
-				}			
+				}
 				break;
-        	}
-        	break;
-	default:
-		channelMap.put(&apos;Soap Payload&apos;, validate(&quot;&quot;, &apos;&apos;, new Array()));        	
+			default:// api/countries/{countryName}
+				switch (String($(&apos;uriFragment3&apos;))) {
+					case &apos;&apos;:// api/countries/{countryName}/
+						break;
+					case &apos;holidays&apos;: //	api/countries/{countryName}/holiday
+						switch (String($(&apos;uriFragment4&apos;)))
+						{
+							case &apos;&apos;:
+								switch (String($(&apos;Http Method&apos;)))
+								{
+									case &apos;get&apos;://	api/countries/{countryName}/holiday/
+										channelMap.put(&apos;singularResourceName&apos;, validate(&apos;Holiday&apos;, &apos;&apos;, new Array()));
+										channelMap.put(&apos;pluralResourceName&apos;, validate(&apos;Holidays&apos;, &apos;&apos;, new Array()));
+										payloadData = {&apos;countryName&apos;: $(&apos;uriFragment2&apos;).toString()};
+										channelMap.put(&apos;Soap Payload&apos;, validate(getXmlPayload(2, payloadData), &apos;&apos;, new Array()));	
+										break;
+								}
+								break;
+							default:
+								switch (String($(&apos;Http Method&apos;)))
+								{
+									case &apos;get&apos;://	api/countries/{countryName}/holiday/{holidayName}	
+										channelMap.put(&apos;singularResourceName&apos;, validate(&apos;Holiday&apos;, &apos;&apos;, new Array()));
+										channelMap.put(&apos;pluralResourceName&apos;, validate(&apos;Holidays&apos;, &apos;&apos;, new Array()));
+										payloadData = {&apos;countryName&apos;: $(&apos;uriFragment2&apos;).toString(),
+													&apos;holidayName&apos;: $(&apos;uriFragment4&apos;).toString()};
+													
+										channelMap.put(&apos;payload&apos;, validate(payloadData, &apos;&apos;, new Array()));
+										channelMap.put(&apos;Soap Payload&apos;, validate(getXmlPayload(3, payloadData), &apos;&apos;, new Array()));	
+										break;
+								}
+								break;
+					}			
+					break;
+				}
+				break;
+		}
+		break;
 }</script>
           </properties>
           <transformer version="3.5.1">
@@ -322,7 +361,7 @@ channelMap.put(&apos;resourceIdentificator&apos;, validate(parseEndPoint[1], &ap
             <attachmentNames/>
             <attachmentContents/>
             <attachmentTypes/>
-            <soapAction>http://www.holidaywebservice.com/HolidayService_v2/GetCountriesAvailable</soapAction>
+            <soapAction>http://www.holidaywebservice.com/HolidayService_v2/HolidayService2.asmx</soapAction>
             <wsdlDefinitionMap>
               <map class="linked-hash-map">
                 <entry>
@@ -385,49 +424,40 @@ channelMap.put(&apos;resourceIdentificator&apos;, validate(parseEndPoint[1], &ap
               <com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
                 <name>Xml to Json Resource</name>
                 <sequenceNumber>0</sequenceNumber>
-                <script>tmp[&apos;resource&apos;] = $(&apos;resourceName&apos;);
+                <script>//static values
+	tmp[&apos;status&apos;] = &quot;success&quot;;
+	tmp[&apos;code&apos;] = 200;
+	tmp[&apos;message&apos;] = &quot;Ok&quot;;
+//
 
-tmp[&apos;total&apos;] = msg.*::[&apos;Body&apos;].*::[&apos;GetCountriesAvailableResponse&apos;].*::[&apos;GetCountriesAvailableResult&apos;].*::[&apos;CountryCode&apos;].length()
+//dynamic values
+	tmp[&apos;resource&apos;] = $(&apos;singularResourceName&apos;);
+	
+	tmp[&apos;total&apos;] = msg.*::[&apos;Body&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) + &apos;AvailableResponse&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) + &apos;AvailableResult&apos;].*::[$(&apos;singularResourceName&apos;) + &apos;Code&apos;].length();
 
-for (var i = 0; i &lt; msg.*::[&apos;Body&apos;].*::[&apos;GetCountriesAvailableResponse&apos;].*::[&apos;GetCountriesAvailableResult&apos;].*::[&apos;CountryCode&apos;].length(); i++)
-{
-	tmp[&apos;data&apos;][i] = {};
-	tmp[&apos;data&apos;][i][&apos;name&apos;] = msg.*::[&apos;Body&apos;].*::[&apos;GetCountriesAvailableResponse&apos;].*::[&apos;GetCountriesAvailableResult&apos;].*::[&apos;CountryCode&apos;][i].*::[&apos;Code&apos;].toString();
-}</script>
+	//collection
+	if (tmp[&apos;total&apos;] &gt; 1)
+	{
+		tmp[&apos;data&apos;] = [];
+	
+		for (var i = 0; i &lt; msg.*::[&apos;Body&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) + &apos;AvailableResponse&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) +&apos;AvailableResult&apos;].*::[$(&apos;singularResourceName&apos;) + &apos;Code&apos;].length(); i++)
+		{	
+			tmp[&apos;data&apos;][i] = {};
+			tmp[&apos;data&apos;][i][&apos;code&apos;] = 		msg.*::[&apos;Body&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) + &apos;AvailableResponse&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) + &apos;AvailableResult&apos;].*::[$(&apos;singularResourceName&apos;) + &apos;Code&apos;][i].*::[&apos;Code&apos;].toString();
+			tmp[&apos;data&apos;][i][&apos;description&apos;] = 	msg.*::[&apos;Body&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) + &apos;AvailableResponse&apos;].*::[&apos;Get&apos; + $(&apos;pluralResourceName&apos;) + &apos;AvailableResult&apos;].*::[$(&apos;singularResourceName&apos;) + &apos;Code&apos;][i].*::[&apos;Description&apos;].toString();
+		}
+	} 
+	else 
+	{
+		tmp[&apos;data&apos;] = {};
+
+		tmp[&apos;data&apos;][&apos;code&apos;] = String($(&apos;uriFragment4&apos;));
+		tmp[&apos;data&apos;][&apos;date&apos;] = msg.*::[&apos;Body&apos;].*::[&apos;GetHolidayDateResponse&apos;].*::[&apos;GetHolidayDateResult&apos;].toString();
+	}</script>
               </com.mirth.connect.plugins.javascriptstep.JavaScriptStep>
             </elements>
-            <inboundTemplate encoding="base64">PHNvYXA6RW52ZWxvcGUgeG1sbnM6ZW52PSJodHRwOi8vd3d3LnczLm9yZy8yMDAzLzA1L3NvYXAt
-ZW52ZWxvcGUiIHhtbG5zOnNvYXA9Imh0dHA6Ly93d3cudzMub3JnLzIwMDMvMDUvc29hcC1lbnZl
-bG9wZSIgeG1sbnM6eHNkPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYSIgeG1sbnM6
-eHNpPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYS1pbnN0YW5jZSI+DQogICAgPGVu
-djpIZWFkZXIvPg0KICAgIDxzb2FwOkJvZHkgeG1sbnM9Imh0dHA6Ly93d3cuaG9saWRheXdlYnNl
-cnZpY2UuY29tL0hvbGlkYXlTZXJ2aWNlX3YyLyI+DQogICAgICAgIDxHZXRDb3VudHJpZXNBdmFp
-bGFibGVSZXNwb25zZT4NCiAgICAgICAgICAgIDxHZXRDb3VudHJpZXNBdmFpbGFibGVSZXN1bHQ+
-DQogICAgICAgICAgICAgICAgPENvdW50cnlDb2RlPg0KICAgICAgICAgICAgICAgICAgICA8Q29k
-ZT5DYW5hZGE8L0NvZGU+DQogICAgICAgICAgICAgICAgICAgIDxEZXNjcmlwdGlvbj5DYW5hZGE8
-L0Rlc2NyaXB0aW9uPg0KICAgICAgICAgICAgICAgIDwvQ291bnRyeUNvZGU+DQogICAgICAgICAg
-ICAgICAgPENvdW50cnlDb2RlPg0KICAgICAgICAgICAgICAgICAgICA8Q29kZT5HcmVhdEJyaXRh
-aW48L0NvZGU+DQogICAgICAgICAgICAgICAgICAgIDxEZXNjcmlwdGlvbj5HcmVhdCBCcml0YWlu
-IGFuZCBXYWxlczwvRGVzY3JpcHRpb24+DQogICAgICAgICAgICAgICAgPC9Db3VudHJ5Q29kZT4N
-CiAgICAgICAgICAgICAgICA8Q291bnRyeUNvZGU+DQogICAgICAgICAgICAgICAgICAgIDxDb2Rl
-PklyZWxhbmROb3J0aGVybjwvQ29kZT4NCiAgICAgICAgICAgICAgICAgICAgPERlc2NyaXB0aW9u
-Pk5vcnRoZXJuIElyZWxhbmQ8L0Rlc2NyaXB0aW9uPg0KICAgICAgICAgICAgICAgIDwvQ291bnRy
-eUNvZGU+DQogICAgICAgICAgICAgICAgPENvdW50cnlDb2RlPg0KICAgICAgICAgICAgICAgICAg
-ICA8Q29kZT5JcmVsYW5kUmVwdWJsaWNPZjwvQ29kZT4NCiAgICAgICAgICAgICAgICAgICAgPERl
-c2NyaXB0aW9uPlJlcHVibGljIG9mIElyZWxhbmQ8L0Rlc2NyaXB0aW9uPg0KICAgICAgICAgICAg
-ICAgIDwvQ291bnRyeUNvZGU+DQogICAgICAgICAgICAgICAgPENvdW50cnlDb2RlPg0KICAgICAg
-ICAgICAgICAgICAgICA8Q29kZT5TY290bGFuZDwvQ29kZT4NCiAgICAgICAgICAgICAgICAgICAg
-PERlc2NyaXB0aW9uPlNjb3RsYW5kPC9EZXNjcmlwdGlvbj4NCiAgICAgICAgICAgICAgICA8L0Nv
-dW50cnlDb2RlPg0KICAgICAgICAgICAgICAgIDxDb3VudHJ5Q29kZT4NCiAgICAgICAgICAgICAg
-ICAgICAgPENvZGU+VW5pdGVkU3RhdGVzPC9Db2RlPg0KICAgICAgICAgICAgICAgICAgICA8RGVz
-Y3JpcHRpb24+VW5pdGVkIFN0YXRlczwvRGVzY3JpcHRpb24+DQogICAgICAgICAgICAgICAgPC9D
-b3VudHJ5Q29kZT4NCiAgICAgICAgICAgIDwvR2V0Q291bnRyaWVzQXZhaWxhYmxlUmVzdWx0Pg0K
-ICAgICAgICA8L0dldENvdW50cmllc0F2YWlsYWJsZVJlc3BvbnNlPg0KICAgIDwvc29hcDpCb2R5
-Pg0KPC9zb2FwOkVudmVsb3BlPg0K</inboundTemplate>
-            <outboundTemplate encoding="base64">ewogICAgInN0YXR1cyI6ICJzdWNjZXNzIiwKICAgICJjb2RlIjogIjIwMCIsCiAgICAibWVzc2Fn
-ZSI6ICJPayIsCiAgICAicmVzb3VyY2UiOiAiIiwKICAgICJ0b3RhbCI6IDEsCiAgICAiZGF0YSI6
-IFsKICAgICAgICB7CiAgICAgICAgICAgICJuYW1lIjogIldlYmVyIFBMQyIKICAgICAgICB9CiAg
-ICBdCn0=</outboundTemplate>
+            <inboundTemplate encoding="base64"></inboundTemplate>
+            <outboundTemplate encoding="base64">e30=</outboundTemplate>
             <inboundDataType>XML</inboundDataType>
             <outboundDataType>JSON</outboundDataType>
             <inboundProperties class="com.mirth.connect.plugins.datatypes.xml.XMLDataTypeProperties" version="3.5.1">
@@ -505,7 +535,7 @@ return;</undeployScript>
         <metadata>
           <enabled>true</enabled>
           <lastModified>
-            <time>1523558045660</time>
+            <time>1523646204787</time>
             <timezone>America/Santiago</timezone>
           </lastModified>
           <pruningSettings>
@@ -534,24 +564,24 @@ return;</undeployScript>
               <codeTemplate version="3.5.1">
                 <id>a452223d-2387-4ab8-b511-2865b3b7adda</id>
                 <name>get Xml Payload HolyDays Soap Service</name>
-                <revision>3</revision>
+                <revision>5</revision>
                 <lastModified>
-                  <time>1523559081804</time>
+                  <time>1523636195531</time>
                   <timezone>America/Santiago</timezone>
                 </lastModified>
                 <contextSet>
                   <delegate>
-                    <contextType>DESTINATION_DISPATCHER</contextType>
-                    <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
-                    <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
-                    <contextType>SOURCE_RECEIVER</contextType>
-                    <contextType>CHANNEL_PREPROCESSOR</contextType>
-                    <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
-                    <contextType>CHANNEL_BATCH</contextType>
-                    <contextType>CHANNEL_DEPLOY</contextType>
-                    <contextType>CHANNEL_UNDEPLOY</contextType>
-                    <contextType>CHANNEL_POSTPROCESSOR</contextType>
                     <contextType>CHANNEL_ATTACHMENT</contextType>
+                    <contextType>CHANNEL_UNDEPLOY</contextType>
+                    <contextType>CHANNEL_PREPROCESSOR</contextType>
+                    <contextType>DESTINATION_DISPATCHER</contextType>
+                    <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+                    <contextType>CHANNEL_BATCH</contextType>
+                    <contextType>SOURCE_RECEIVER</contextType>
+                    <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
+                    <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
+                    <contextType>CHANNEL_DEPLOY</contextType>
+                    <contextType>CHANNEL_POSTPROCESSOR</contextType>
                   </delegate>
                 </contextSet>
                 <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
@@ -563,11 +593,11 @@ return;</undeployScript>
 	@param {Any} index - 
 	@return {String} return description
 */
-function getXmlPayload (index) 
+function getXmlPayload (index, payloadData) 
 {
 	switch (index)
 	{
-		case 1:	//Get /api/Countries
+		case 1:	//Get /api/Countries/
 			return &quot;&lt;?xml version=&apos;1.0&apos; encoding=&apos;utf-8&apos;?&gt;&quot;
 				+ &quot;&lt;soap12:Envelope xmlns:xsi=&apos;http://www.w3.org/2001/XMLSchema-instance&apos; xmlns:xsd=&apos;http://www.w3.org/2001/XMLSchema&apos; xmlns:soap12=&apos;http://www.w3.org/2003/05/soap-envelope&apos;&gt;&quot;
   				+ &quot;&lt;soap12:Body&gt;&quot;
@@ -575,16 +605,27 @@ function getXmlPayload (index)
   				+ &quot;&lt;/soap12:Body&gt;&quot;
 				+ &quot;&lt;/soap12:Envelope&gt;&quot;;
 			break;
-		case 2:	///Get api/Countries/Holidays
+		case 2:	///Get api/Countries/{CountryName}/holidays/
 			return &quot;&lt;?xml version=&apos;1.0&apos; encoding=&apos;utf-8&apos;?&gt;&quot;
-				+ &quot;&lt;soap:Envelope xmlns:xsi=&apos;http://www.w3.org/2001/XMLSchema-instance&apos; xmlns:xsd=&apos;http://www.w3.org/2001/XMLSchema&apos; xmlns:soap=&apos;http://schemas.xmlsoap.org/soap/envelope/&apos;&gt;&quot;
-  				+ &quot;&lt;soap:Body&gt;&quot;
-    				+ &quot;&lt;GetHolidaysAvailable xmlns=&apos;http://www.holidaywebservice.com/HolidayService_v2/&apos;&gt;&quot;
-      			+ &quot;&lt;countryCode&gt;Canada or GreatBritain or IrelandNorthern or IrelandRepublicOf or Scotland or UnitedStates&lt;/countryCode&gt;&quot;
-    				+ &quot;&lt;/GetHolidaysAvailable&gt;&quot;
-  				+ &quot;&lt;/soap:Body&gt;&quot;
-				+ &quot;&lt;/soap:Envelope&gt;&quot;;
-				
+					+ &quot;&lt;soap12:Envelope xmlns:xsi=&apos;http://www.w3.org/2001/XMLSchema-instance&apos; xmlns:xsd=&apos;http://www.w3.org/2001/XMLSchema&apos; xmlns:soap12=&apos;http://www.w3.org/2003/05/soap-envelope&apos;&gt;&quot;
+  						+ &quot;&lt;soap12:Body&gt;&quot;
+    							+ &quot;&lt;GetHolidaysAvailable xmlns=&apos;http://www.holidaywebservice.com/HolidayService_v2/&apos;&gt;&quot;
+      							+ &quot;&lt;countryCode&gt;&quot; + payloadData.countryName + &quot;&lt;/countryCode&gt;&quot;
+    							+ &quot;&lt;/GetHolidaysAvailable&gt;&quot;
+  						+ &quot;&lt;/soap12:Body&gt;&quot;
+					+ &quot;&lt;/soap12:Envelope&gt;&quot;;
+			break;
+		case 3:	///Get api/Countries/{CountryName}/holidays/{holydayName}
+			return &quot;&lt;?xml version=&apos;1.0&apos; encoding=&apos;utf-8&apos;?&gt;&quot;
+				+ &quot;&lt;soap12:Envelope xmlns:xsi=&apos;http://www.w3.org/2001/XMLSchema-instance&apos; xmlns:xsd=&apos;http://www.w3.org/2001/XMLSchema&apos; xmlns:soap12=&apos;http://www.w3.org/2003/05/soap-envelope&apos;&gt;&quot;
+  					+ &quot;&lt;soap12:Body&gt;&quot;
+    						+ &quot;&lt;GetHolidayDate xmlns=&apos;http://www.holidaywebservice.com/HolidayService_v2/&apos;&gt;&quot;
+      						+ &quot;&lt;countryCode&gt;&quot; + payloadData.countryName + &quot;&lt;/countryCode&gt;&quot;
+    							+ &quot;&lt;holidayCode&gt;&quot;+ payloadData.holidayName + &quot;&lt;/holidayCode&gt;&quot;
+     						+ &quot;&lt;year&gt;&quot; + (new Date()).getFullYear() + &quot;&lt;/year&gt;&quot;
+  						+ &quot;&lt;/GetHolidayDate&gt;&quot;
+  					+ &quot;&lt;/soap12:Body&gt;&quot;
+				+ &quot;&lt;/soap12:Envelope&gt;&quot;		
 		default:
 			return &quot;&quot;;
 	}
