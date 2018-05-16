@@ -1,5 +1,5 @@
 <serverConfiguration version="3.5.2">
-  <date>2018-05-14 16:18:22</date>
+  <date>2018-05-16 09:45:30</date>
   <channelGroups>
     <channelGroup version="3.5.2">
       <id>efe99756-42d4-4c89-9291-e70cc33fdaf2</id>
@@ -2684,10 +2684,10 @@ return;</undeployScript>
           </lastModified>
           <contextSet>
             <delegate>
-              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
-              <contextType>SOURCE_RECEIVER</contextType>
-              <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
               <contextType>DESTINATION_DISPATCHER</contextType>
+              <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+              <contextType>SOURCE_RECEIVER</contextType>
+              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
               <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
             </delegate>
           </contextSet>
@@ -2788,7 +2788,7 @@ function getXmlPayload(payloadID, payloadData)
   </serverSettings>
   <updateSettings version="3.5.2">
     <statsEnabled>true</statsEnabled>
-    <lastStatsTime>1526047100335</lastStatsTime>
+    <lastStatsTime>1526391127163</lastStatsTime>
   </updateSettings>
   <globalScripts>
     <entry>
