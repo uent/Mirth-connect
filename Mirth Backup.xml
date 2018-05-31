@@ -1,5 +1,5 @@
 <serverConfiguration version="3.5.2">
-  <date>2018-05-29 10:52:52</date>
+  <date>2018-05-31 17:24:40</date>
   <channelGroups>
     <channelGroup version="3.5.2">
       <id>926e46d0-467e-4075-87cf-aea11fbca6e3</id>
@@ -48,7 +48,7 @@
       <nextMetaDataId>6</nextMetaDataId>
       <name>Bono 3 Api Service</name>
       <description></description>
-      <revision>33</revision>
+      <revision>37</revision>
       <sourceConnector version="3.5.2">
         <metaDataId>0</metaDataId>
         <name>sourceConnector</name>
@@ -200,7 +200,9 @@ channelMap.put(&apos;uriFragment3&apos;, validate(parseEndPoint[2], &apos;&apos;
 
 channelMap.put(&apos;uriFragment4&apos;, validate(parseEndPoint[3], &apos;&apos;, new Array()));
 
-channelMap.put(&apos;uriFragment5&apos;, validate(parseEndPoint[4], &apos;&apos;, new Array()));</script>
+channelMap.put(&apos;uriFragment5&apos;, validate(parseEndPoint[4], &apos;&apos;, new Array()));
+
+channelMap.put(&apos;responseFormat&apos;, validate(&apos;Json&apos;, &apos;&apos;, new Array()));</script>
           </properties>
           <transformer version="3.5.2">
             <elements/>
@@ -293,6 +295,7 @@ channelMap.put(&apos;uriFragment5&apos;, validate(parseEndPoint[4], &apos;&apos;
 										switch ($(&apos;Http Method&apos;))
 										{
 											case &apos;get&apos;:	//Get financiadores/{codFinanciador}/beneficiados/{rutBeneficiario}/
+												channelMap.put(&apos;principalResource&apos;, validate(&apos;Pacient&apos;, &apos;&apos;, new Array()));
 												//BenCertif
 												break;
 											case &apos;post&apos;:	//Post financiadores/{codFinanciador}/beneficiados/{rutBeneficiario}/
@@ -317,10 +320,18 @@ channelMap.put(&apos;uriFragment5&apos;, validate(parseEndPoint[4], &apos;&apos;
 						switch ($(&apos;uriFragment4&apos;))
 						{
 							case &apos;&apos;:	//financiadores/{codFinanciador}/bonos/
+								switch ($(&apos;Http Method&apos;))
+								{
+									case &apos;get&apos;:
+										//SolicFolios
+										break;
+									case &apos;post&apos;:
+										//EnvBonis
+										break;		
+								}
 								break;
-								
 							default:	//financiadores/{codFinanciador}/bonos/{folioBono}
-								
+								//AnulaBonou
 								break;
 						}
 						break;
@@ -546,22 +557,10 @@ channelMap.put(&apos;resultData&apos;, validate(JSON.parse(response.getMessage()
               <queueBufferSize>1000</queueBufferSize>
               <reattachAttachments>true</reattachAttachments>
             </destinationConnectorProperties>
-            <script>response = {};
-afiliadoFlag = false;
-for (var key in $(resultData)) {
-
-	if (	key === &apos;extNormCotizante&apos; || 
-		key === &apos;extCodigoError&apos;) {
-
-		if (afiliadoFlag === false)
-		{
-			afiliadoFlag = true;
-			response[&apos;Afiliado&apos;] = {};
-		}
-		response[&apos;Afiliado&apos;][key] = $(resultData)[key];
-	}
-}
-</script>
+            <script>if ($(&apos;responseFormat&apos;) === &apos;Json&apos; || $(&apos;responseFormat&apos;) === false)
+{
+	return jsonResponseMaker($(&apos;resultData&apos;), $(&apos;principalResource&apos;));
+}</script>
           </properties>
           <transformer version="3.5.2">
             <elements/>
@@ -653,7 +652,7 @@ return;</undeployScript>
         <metadata>
           <enabled>false</enabled>
           <lastModified>
-            <time>1527527423541</time>
+            <time>1527795336514</time>
             <timezone>America/Santiago</timezone>
           </lastModified>
           <pruningSettings>
@@ -3753,9 +3752,9 @@ return;</undeployScript>
     <codeTemplateLibrary version="3.5.2">
       <id>a9a3ecdd-b11b-453f-9693-f13ca54ece31</id>
       <name>Bono Electronico 3.0</name>
-      <revision>3</revision>
+      <revision>7</revision>
       <lastModified>
-        <time>1527105957797</time>
+        <time>1527688574262</time>
         <timezone>GMT</timezone>
       </lastModified>
       <description></description>
@@ -3767,9 +3766,146 @@ return;</undeployScript>
         <string>bcd252d7-2eac-41f8-9220-4d52ef361d13</string>
         <string>74fed4cb-0aa0-4289-9cbf-529bf8977107</string>
         <string>4588f2cb-5cd1-403a-81b2-f721ece6502c</string>
+        <string>f8605364-e79e-4b47-ab44-eed176c6c748</string>
         <string>44a667ae-1b8a-4d77-9760-335aafb850d0</string>
       </disabledChannelIds>
       <codeTemplates>
+        <codeTemplate version="3.5.2">
+          <id>6e0420df-2868-4e72-b93c-45784e29907b</id>
+          <name>jsonResponseMaker</name>
+          <revision>4</revision>
+          <lastModified>
+            <time>1527688574283</time>
+            <timezone>GMT</timezone>
+          </lastModified>
+          <contextSet>
+            <delegate>
+              <contextType>DESTINATION_DISPATCHER</contextType>
+              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
+              <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
+              <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+              <contextType>SOURCE_RECEIVER</contextType>
+            </delegate>
+          </contextSet>
+          <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
+            <type>FUNCTION</type>
+            <code>/**
+	Modify the description here. Modify the function name and parameters as needed. One function per
+	template is recommended; create a new code template for each new function.
+
+	@param {String} arg1 - arg1 description
+	@return {String} return description
+*/
+
+function jsonResponseMaker(resultData, principal) {
+	principal = principal || false;
+	response = {};
+	patientFlag = false;
+	organizationFlag = false;
+	carePlanFlag = false;
+	operationOutcomeFlag = false;
+
+	for (var key in resultData) {
+
+		if (	key === &apos;extNormCotizante&apos; || 
+			key === &apos;extApellidoMat&apos; || 
+			key === &apos;extNombres&apos; || 
+			key === &apos;ExtSexo&apos; || 
+			key === &apos;extFechaNacimi&apos; || 
+			key === &apos;extCodEstBen&apos; || 
+			key === &apos;extDescEstado&apos; || 
+			key === &apos;extRutCotizante&apos; || 
+			key === &apos;extNomCotizante&apos; || 
+			key === &apos;extDirPaciente&apos; || 
+			key === &apos;extGlosaComuna&apos; || 
+			key === &apos;extGlosaCiudad&apos; || 
+			key === &apos;extPrevision&apos; || 
+			key === &apos;ExtGlosa&apos;) {
+
+				if (patientFlag === false)
+				{
+					patientFlag = true;
+					response[&apos;Patient&apos;] = {};
+				}
+
+				
+				response[&apos;Patient&apos;][key] = resultData[key];
+		}
+
+		else if (
+			key === &apos;extNivel&apos; || 
+			key === &apos;extTipoPrestador&apos; || 
+			key === &apos;extCodEspecialidades&apos; || 
+			key === &apos;extCodProfesiones&apos; || 
+			key === &apos;extAnosAntiguedad&apos;) {
+			
+				if (organizationFlag === false)
+				{
+					organizationFlag = true;
+					response[&apos;Organization&apos;] = {};
+				}
+				response[&apos;Organization&apos;][key] = resultData[key];
+			}
+
+		
+		else if (key === &apos;ExtPlan&apos;) {
+			
+			if (carePlanFlag === false)
+			{
+				carePlanFlag = true;
+				response[&apos;CarePlan&apos;] = {};
+			}
+			response[&apos;CarePlan&apos;][key] = resultData[key];
+		}
+
+		else if (
+			key === &apos;extCodError&apos; ||
+			key === &apos;extMensajeError&apos;) {
+
+				if (operationOutcomeFlag === false)
+				{
+					operationOutcomeFlag = true;
+					response[&apos;OperationOutcome&apos;] = {};
+				}
+				response[&apos;OperationOutcome&apos;][key] = resultData[key];
+		}
+	}
+
+	return response;
+}</code>
+          </properties>
+        </codeTemplate>
+        <codeTemplate version="3.5.2">
+          <id>3f4360f8-a1af-49b3-8c65-3329becc2df9</id>
+          <name>variableNameDictionary</name>
+          <revision>1</revision>
+          <lastModified>
+            <time>1527622149921</time>
+            <timezone>GMT</timezone>
+          </lastModified>
+          <contextSet>
+            <delegate>
+              <contextType>DESTINATION_DISPATCHER</contextType>
+              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
+              <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
+              <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+              <contextType>SOURCE_RECEIVER</contextType>
+            </delegate>
+          </contextSet>
+          <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
+            <type>FUNCTION</type>
+            <code>/**
+	Modify the description here. Modify the function name and parameters as needed. One function per
+	template is recommended; create a new code template for each new function.
+
+	@param {String} arg1 - arg1 description
+	@return {String} return description
+*/
+function variableNameDictionary(variableName) {
+	
+}</code>
+          </properties>
+        </codeTemplate>
         <codeTemplate version="3.5.2">
           <id>5ec62be6-028c-4662-bfd4-2a50c5c84d6d</id>
           <name>XmlPayload</name>
@@ -3780,11 +3916,11 @@ return;</undeployScript>
           </lastModified>
           <contextSet>
             <delegate>
-              <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
-              <contextType>SOURCE_RECEIVER</contextType>
-              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
               <contextType>DESTINATION_DISPATCHER</contextType>
+              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
+              <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
               <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+              <contextType>SOURCE_RECEIVER</contextType>
             </delegate>
           </contextSet>
           <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
@@ -3953,11 +4089,11 @@ return
           </lastModified>
           <contextSet>
             <delegate>
-              <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
-              <contextType>SOURCE_RECEIVER</contextType>
-              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
               <contextType>DESTINATION_DISPATCHER</contextType>
+              <contextType>SOURCE_FILTER_TRANSFORMER</contextType>
+              <contextType>DESTINATION_FILTER_TRANSFORMER</contextType>
               <contextType>DESTINATION_RESPONSE_TRANSFORMER</contextType>
+              <contextType>SOURCE_RECEIVER</contextType>
             </delegate>
           </contextSet>
           <properties class="com.mirth.connect.model.codetemplates.BasicCodeTemplateProperties">
@@ -4058,7 +4194,7 @@ function getXmlPayload(payloadID, payloadData)
   </serverSettings>
   <updateSettings version="3.5.2">
     <statsEnabled>true</statsEnabled>
-    <lastStatsTime>1527602328306</lastStatsTime>
+    <lastStatsTime>1527688843711</lastStatsTime>
   </updateSettings>
   <globalScripts>
     <entry>
